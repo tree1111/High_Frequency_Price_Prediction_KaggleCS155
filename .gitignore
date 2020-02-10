@@ -2,3 +2,11 @@
 .ipynb_checkpoints/Untitled-checkpoint.ipynb
 .ipynb_checkpoints/process-checkpoint.ipynb
 .DS_Store
+.idea/vcs.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/155_kaggle.iml
+submission.csv
+sklearn_test_notebook.ipynb
+sklearn_test_notebook.ipynb
