@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.optim as optim
+import torch.utils.data as data_utils
 
 training_data =  pd.read_csv('train.csv', sep=',', header = 0, skiprows = 0, nrows=10000)
 values = list(training_data.columns.values)
@@ -25,6 +26,9 @@ training_X = torch.from_numpy(training_X)
 training_Y = torch.from_numpy(training_Y)
 print(training_X.shape)
 print(training_Y.shape)
+
+train = data_utils.TensorDataset(training_X, training_Y)
+train_loader = data_utils.DataLoader(train, batch_size=32, shuffle=True)
 
 N, D_in, D_out = 10000, 26, 2
 
@@ -41,33 +45,34 @@ model = torch.nn.Sequential(
 loss_fn = torch.nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-for t in range(500):
+for epoch in range(10):
     # Forward pass: compute predicted y by passing x to the model. Module objects
     # override the __call__ operator so you can call them like functions. When
     # doing so you pass a Tensor of input data to the Module and it produces
     # a Tensor of output data.
-    y_pred = model(training_X)
-    #print(y_pred.shape)
+    running_loss = 0.0
 
-    # Compute and print loss. We pass Tensors containing the predicted and true
-    # values of y, and the loss function returns a Tensor containing the
-    # loss.
-    loss = loss_fn(y_pred, training_Y)
-    if t % 100 == 99:
-        print(t, loss.item())
+    for i, data in enumerate(train_loader):
+      inputs, labels = data
 
-    # Zero the gradients before running the backward pass.
-    model.zero_grad()
+      optimizer.zero_grad()
 
-    # Backward pass: compute gradient of the loss with respect to all the learnable
-    # parameters of the model. Internally, the parameters of each Module are stored
-    # in Tensors with requires_grad=True, so this call will compute gradients for
-    # all learnable parameters in the model.
-    loss.backward()
+      # forward + backward + optimize
+      outputs = model(inputs)
+      loss = loss_fn(outputs, labels)
+      loss.backward()
+      optimizer.step()
 
-    # Update the weights using gradient descent. Each parameter is a Tensor, so
-    # we can access its gradients like we did before.
-    optimizer.step()
+
+
+
+      running_loss += loss.item()/inputs.shape[0]
+    
+    print(epoch, running_loss)
+
+for name, param in model.named_parameters():
+    if param.requires_grad:
+        print (name, param.data)
 
 test_data =  pd.read_csv('train.csv', sep=',', header = 0, skiprows = 10000, nrows=1000)
 values = list(test_data.columns.values)
@@ -83,15 +88,30 @@ test_Y = torch.from_numpy(test_Y)
 print(test_X.shape)
 print(test_Y.shape)
 
+test = data_utils.TensorDataset(test_X, test_Y)
+test_loader = data_utils.DataLoader(test, batch_size=32, shuffle=False)
+
 correct = 0
 total = 0
 with torch.no_grad():
+    for data in test_loader:
+        images, labels = data
+        #print (images)
+        #print(labels)
+        outputs = model(images)
+        temp, predicted = torch.max(outputs.data, 1)
+        #print(outputs)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+'''
     for i in range(test_X.shape[0]):
         test_input, test_labels = test_X[i], test_Y[i]
         outputs = model(test_input)
         _, predicted = torch.max(outputs.data, 0)
         total += 1
         correct += (predicted == test_labels).sum().item()
+'''
 print(correct)
 print(total)
 
