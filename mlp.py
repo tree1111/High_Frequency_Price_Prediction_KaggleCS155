@@ -32,7 +32,8 @@ X = preprocessing.scale(features.values)
 Y = labels.values
 Y = Y.reshape(len(Y))
 
-import xgboost as xgb
+from sklearn.neural_network import MLPClassifier
+
 
 from sklearn.metrics import roc_auc_score
 
@@ -61,7 +62,11 @@ print(optimized_GBM.best_estimator_.get_params())
 for train_index, val_index in kf.split(X):
     X_train, X_val = X[train_index], X[val_index]
     y_train, y_val = Y[train_index], Y[val_index]
-    model = xgb.XGBClassifier(random_state=1, n_estimators=70, learning_rate=0.1, n_jobs=-1)
+    model = MLPClassifier(
+        random_state=1,
+        hidden_layer_sizes=(100, 100),
+        learning_rate="adaptive"
+    )
     model.fit(X_train, y_train)
     score.append(roc_auc_score(y_val, model.predict_proba(X_val)[:, 1]))
     print(roc_auc_score(y_val, model.predict_proba(X_val)[:, 1]))
