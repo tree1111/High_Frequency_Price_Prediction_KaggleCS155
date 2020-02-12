@@ -10,3 +10,5 @@
 submission.csv
 sklearn_test_notebook.ipynb
 sklearn_test_notebook.ipynb
+__pycache__/xg_b.cpython-37.pyc
+.DS_Store
