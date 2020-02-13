@@ -32,7 +32,7 @@ Y = Y.reshape(len(Y))
 import xgboost as xgb
 from lightgbm import LGBMClassifier
 
-model = LGBMClassifier(random_state=1, reg_lambda=1, reg_alpha=1)
+model = LGBMClassifier(random_state=1, n_estimators=40, reg_lambda=1, reg_alpha=1)
 model.fit(X, Y)
 
 test_data = pd.read_csv("data/test.csv", index_col=0)
