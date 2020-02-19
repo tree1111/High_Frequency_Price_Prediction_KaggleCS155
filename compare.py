@@ -51,23 +51,24 @@ X = scalar.transform(features.values)
 Y = labels.values
 Y = Y.reshape(len(Y))
 
-import xgboost as xgb
 import lightgbm as lgb
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.neural_network import MLPClassifier
 
 score = []
-kf = KFold(n_splits=10, random_state=1, shuffle=True)
-
-for train_index, val_index in kf.split(X):
-    X_train, X_val = X[train_index], X[val_index]
-    y_train, y_val = Y[train_index], Y[val_index]
-    model = MLPClassifier(random_state=1, hidden_layer_sizes=(30, 15), batch_size=256, activation='tanh')
-    # model = LGBMClassifier(random_state=1, reg_alpha=1, reg_lambda=1, learning_rate = 0.1)
-    model.fit(X_train, y_train)
-    score.append(roc_auc_score(y_val, model.predict_proba(X_val)[:, 1]))
-    print(roc_auc_score(y_val, model.predict_proba(X_val)[:, 1]))
-print(sum(score) / 10)
-
-# print(score)
-print(np.mean(score))
+kf = KFold(n_splits=5, random_state=1, shuffle=True)
+models = [
+    LogisticRegression(random_state=1),
+    MLPClassifier(random_state=1, hidden_layer_sizes=(30, 15), batch_size=128, activation='tanh'),
+    LGBMClassifier(random_state=1, reg_alpha=1, reg_lambda=1, learning_rate=0.1)
+]
+for model in models:
+    score = []
+    for train_index, val_index in kf.split(X):
+        X_train, X_val = X[train_index], X[val_index]
+        y_train, y_val = Y[train_index], Y[val_index]
+        model.fit(X_train, y_train)
+        score.append(roc_auc_score(y_val, model.predict_proba(X_val)[:, 1]))
+        print(roc_auc_score(y_val, model.predict_proba(X_val)[:, 1]))
+    print("a", sum(score) / 5)
